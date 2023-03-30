@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "710540974120",
+    "project_id": "assigmentandroid-c8552",
+    "storage_bucket": "assigmentandroid-c8552.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:710540974120:android:c5efced6233175a92a3d1d",
+        "android_client_info": {
+          "package_name": "com.rifqipadisiliwangi.assigmentandroid"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "710540974120-i5r2542cnhioimc2ngrtiokpopfq4ijg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBy-8Dd9qK09VaXJLU6O2bqXU4Wbl_4G2s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "710540974120-i5r2542cnhioimc2ngrtiokpopfq4ijg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
