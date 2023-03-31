@@ -7,6 +7,7 @@
     android:background="@color/white"
     tools:context=".view.home.HomeActivity">
 
+
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -42,7 +43,7 @@
         android:id="@+id/tvUsernam"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Rifqi Padi Siliwangi "
+        android:text="Selamat Datang "
         android:textSize="20sp"
         android:fontFamily="@font/dm_sans_bold"
         android:layout_marginStart="10dp"
@@ -98,5 +99,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         app:layout_constraintGuide_begin="250dp" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

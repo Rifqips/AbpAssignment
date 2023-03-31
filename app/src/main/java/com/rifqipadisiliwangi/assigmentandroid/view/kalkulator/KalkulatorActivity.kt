@@ -1,6 +1,7 @@
 package com.rifqipadisiliwangi.assigmentandroid.view.kalkulator
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ContentValues
 import android.content.Context
@@ -13,8 +14,13 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import android.view.Gravity
+import android.view.MenuItem
 import android.view.View
+import android.widget.RadioButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
@@ -25,15 +31,22 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
+import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
+import com.rifqipadisiliwangi.assigmentandroid.R
 import com.rifqipadisiliwangi.assigmentandroid.databinding.ActivityKalkulatorBinding
+import com.rifqipadisiliwangi.assigmentandroid.room.DaoHistory
+import com.rifqipadisiliwangi.assigmentandroid.room.DataHistory
+import com.rifqipadisiliwangi.assigmentandroid.room.DatabaseHistory
+import com.rifqipadisiliwangi.assigmentandroid.view.home.HomeActivity
 import com.yalantis.ucrop.UCrop
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import java.io.*
 import java.lang.ref.WeakReference
 import java.util.*
-
 class KalkulatorActivity : AppCompatActivity() {
 
     private lateinit var binding : ActivityKalkulatorBinding
@@ -44,18 +57,147 @@ class KalkulatorActivity : AppCompatActivity() {
     lateinit var activityResultLauncher:ActivityResultLauncher<Intent>
 
     lateinit var finalUri: Uri
+    lateinit var finalUriSechond: Uri
 
+    private var metodePerhitungan: String = ""
+
+    private var dbHistory : DatabaseHistory? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityKalkulatorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-
+        dbHistory = DatabaseHistory.getInstance(this)
 
         checkPermission()
         requestPermission()
+        firstNumber()
+        sechondNumber()
+        setOnCheckedChangeListener()
+        binding.btnHistory.setOnClickListener {
+
+            if (true){
+                historySetUp()
+                Toast.makeText(this@KalkulatorActivity, "Berhasil Tambah History", Toast.LENGTH_SHORT).show()
+            } else{
+                Toast.makeText(this@KalkulatorActivity, "Gagal Tambah History", Toast.LENGTH_SHORT).show()
+            }
+        }
 
 
+        binding.ivBack.setOnClickListener {
+            startActivity(Intent(this,HomeActivity::class.java))
+        }
+
+        activityResultLauncher  =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+                if (result.resultCode== RESULT_OK) {
+                    var extras: Bundle? = result.data?.extras
+                    var imageUri: Uri
+                    var imageBitmap = extras?.get("data") as Bitmap
+                    var imageResult: WeakReference<Bitmap> = WeakReference(
+                        Bitmap.createScaledBitmap(
+                            imageBitmap, imageBitmap.width, imageBitmap.height, false
+                        ).copy(
+                            Bitmap.Config.RGB_565, true
+                        )
+                    )
+                    var bm = imageResult.get()
+                    imageUri = saveImage(bm, this)
+                    launchImageCrop(imageUri)
+
+                }
+
+                else{
+                    Toast.makeText(this,"Failed OCR", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+    }
+
+    private fun historySetUp(){
+
+        GlobalScope.async {
+
+        val valueSatu = binding.ocrResultEt.text.toString()
+        val valueDua = binding.ocrResultEtSechond.text.toString()
+        val hasilHistory = binding.tvHasil.text.toString()
+        val metode = metodePerhitungan.toString()
+
+        dbHistory!!.HistoryItem().addHistory(DataHistory(hasilHistory,valueSatu,valueDua, metode))
+
+
+        }
+//        val valueSatu = item.valueSatu.toString()
+//        val valueDua = item.valueDua.toString()
+//        val hasilHistory = item.hasil.toString()
+//        val metode = item.metode
+//
+//        val itemHistory = databaseHistory?.HistoryItem()?.addHistory(
+//            DataHistory(hasilHistory, valueSatu, valueDua, metode)
+//        )
+//        runOnUiThread {
+//            if (itemHistory != 0.toLong() ){
+//                Toast.makeText(this@KalkulatorActivity, "Berhasil Tambah History", Toast.LENGTH_SHORT).show()
+//                Log.e("$itemHistory","berhasil tambah ke history")
+//                var _isChecked = false
+//                _isChecked = !_isChecked
+//                binding.btnHistory.isClickable = _isChecked
+//            }else{
+//                Toast.makeText(this@KalkulatorActivity, "Gagal Tambah History", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+    }
+
+    private fun setOnCheckedChangeListener() {
+
+
+        binding.rgMetode.setOnCheckedChangeListener { _, checkedId ->
+            val radio: RadioButton = findViewById(checkedId)
+            metodePerhitungan = radio.hint.toString()
+
+            val valA = binding.ocrResultEt.text.toString().toInt()
+            val valB = binding.ocrResultEtSechond.text.toString().toInt()
+
+            when (checkedId) {
+                R.id.rbKali -> {
+                    val hasil = valA * valB
+                    binding.tvHasil.text = hasil.toString()
+                }
+                R.id.rbBagi -> {
+                    val hasil = valA / valB
+                    binding.tvHasil.text = hasil.toString()
+                }
+                R.id.rbTambah -> {
+                    val hasil = valA + valB
+                    binding.tvHasil.text = hasil.toString()
+                }
+                R.id.rbKurang -> {
+                    val hasil = valA - valB
+                    binding.tvHasil.text = hasil.toString()
+                }
+                else -> {
+                    Toast.makeText(this, "Please Input Field", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            Log.i(ContentValues.TAG, "onCheckedChangeListener: $metodePerhitungan")
+//            Toast.makeText(this, radio.text, Toast.LENGTH_SHORT).show()
+
+        }
+
+//        binding.btnHitung.setOnClickListener {
+//            val valA = binding.ocrResultEt.text.toString().toInt()
+//            val valB = binding.ocrResultEtSechond.text.toString().toInt()
+//            val method =  metodePerhitungan
+//            val result = method + valA + valB
+//
+//            binding.tvHasil.text = result.toString()
+//
+//        }
+
+    }
+    private fun firstNumber(){
         binding.gallery.setOnClickListener {
             if (checkPermission()) {
 
@@ -111,40 +253,76 @@ class KalkulatorActivity : AppCompatActivity() {
             alertDialog.show()
         }
 
-        activityResultLauncher  =
-            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
-                if (result.resultCode== RESULT_OK) {
-                    var extras: Bundle? = result.data?.extras
-                    var imageUri: Uri
-                    var imageBitmap = extras?.get("data") as Bitmap
-                    var imageResult: WeakReference<Bitmap> = WeakReference(
-                        Bitmap.createScaledBitmap(
-                            imageBitmap, imageBitmap.width, imageBitmap.height, false
-                        ).copy(
-                            Bitmap.Config.RGB_565, true
-                        )
-                    )
-                    var bm = imageResult.get()
-                    imageUri = saveImage(bm, this)
-                    launchImageCrop(imageUri)
-
-                }
-
-                else{
-
-                }
-
-
-            }
         binding.processImageBtn.setOnClickListener {
             processImage(binding.processImageBtn)
         }
-
     }
 
+    private fun sechondNumber(){
+        binding.gallerySechond.setOnClickListener {
+            if (checkPermission()) {
+                pickFromGallery()
+            }
+            else{
+                Toast.makeText(this, "Allow all permissions", Toast.LENGTH_SHORT).show()
+                requestPermission()
+            }
+        }
+
+        binding.cameraSechond.setOnClickListener {
+            if (checkPermission()) {
+                pickFromCamera()
+            }
+            else{
+                Toast.makeText(this, "Allow all permissions", Toast.LENGTH_SHORT).show()
+                requestPermission()
+            }
+
+        }
+
+        binding.saveSechond.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
+                    val permission = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    requestPermissions(permission,WRITE_EXTERNAL_STORAGE_CODE)
+                }
+                else{
+                    saveEditedImageSechond()
+                }
+            }
+
+        }
+
+        binding.cancelSechond.setOnClickListener {
+
+            val builder = AlertDialog.Builder(this)
+            builder.setMessage("DO YOU WANT TO CANCEL?")
+            builder.setPositiveButton("YES") { dialog, which ->
+
+                binding.image.visibility=View.GONE
+                binding.cancel.visibility=View.GONE
+                binding.save.visibility=View.GONE
+                binding.camera.visibility=View.VISIBLE
+                binding.gallery.visibility=View.VISIBLE
+
+            }
+            builder.setNegativeButton("NO")
+            { dialog, which -> }
+            val alertDialog = builder.create()
+            alertDialog.window?.setGravity(Gravity.BOTTOM)
+            alertDialog.show()
+        }
+
+        binding.processImageBtnSechond.setOnClickListener {
+            processImageSechond(binding.processImageBtnSechond)
+        }
+    }
+
+
+    //  first image proses
     fun processImage(v: View) {
         if (binding.image.drawable != null) {
-            binding.ocrResultEt.setText("")
+            //  binding.ocrResultEt.setText("")
             v.isEnabled = false
             val bitmap = (binding.image.drawable as BitmapDrawable).bitmap
             val image = FirebaseVisionImage.fromBitmap(bitmap)
@@ -157,7 +335,7 @@ class KalkulatorActivity : AppCompatActivity() {
                 }
                 .addOnFailureListener {
                     v.isEnabled = true
-                    binding.ocrResultEt.setText("Failed")
+                    binding.ocrResultEt.text = "Failed"
                 }
         } else {
             Toast.makeText(this, "Select an Image First", Toast.LENGTH_LONG).show()
@@ -165,14 +343,103 @@ class KalkulatorActivity : AppCompatActivity() {
 
     }
 
+    // first choice
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        when (requestCode) {
+
+            GALLERY_REQUEST_CODE -> {
+                if (resultCode == Activity.RESULT_OK) {
+                    data?.data?.let { uri ->
+                        launchImageCrop(uri)
+                    }
+                }
+
+                else{
+                    Toast.makeText(this, "Failed Crop Image", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        }
+
+        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
+            val resultUri :Uri ?= UCrop.getOutput(data!!)
+            val resultUriSechond :Uri ?= UCrop.getOutput(data!!)
+
+            setImage(resultUri!!)
+            if (resultUriSechond != null) {
+                setImageSechond(resultUriSechond)
+            }
+
+            finalUri=resultUri
+            if (resultUriSechond != null) {
+                finalUriSechond=resultUriSechond
+            }
+
+            binding.image.visibility= View.VISIBLE
+            binding.save.visibility=View.VISIBLE
+            binding.cancel.visibility=View.VISIBLE
+            binding.camera.visibility=View.GONE
+            binding.gallery.visibility=View.GONE
+
+            binding.imageSechond.visibility= View.VISIBLE
+            binding.saveSechond.visibility=View.VISIBLE
+            binding.cancelSechond.visibility=View.VISIBLE
+            binding.cameraSechond.visibility=View.GONE
+            binding.gallerySechond.visibility=View.GONE
+
+        }
+
+    }
+
+    // first number process ocr
+    @SuppressLint("SetTextI18n")
     private fun processResultText(resultText: FirebaseVisionText) {
         if (resultText.textBlocks.size == 0) {
-            binding.ocrResultEt.setText("No Text Found")
+            binding.ocrResultEt.text = "No Text Found"
             return
         }
         for (block in resultText.textBlocks) {
-            val blockText = block.text
-            binding.ocrResultEt.append(blockText + "\n")
+            val blockText = block.text.trim()
+            binding.ocrResultEt.text = blockText
+        }
+    }
+
+    //  sechond image proses
+    fun processImageSechond(v: View) {
+        if (binding.imageSechond.drawable != null) {
+            //  binding.ocrResultEt.setText("")
+            v.isEnabled = false
+            val bitmap = (binding.imageSechond.drawable as BitmapDrawable).bitmap
+            val image = FirebaseVisionImage.fromBitmap(bitmap)
+            val detector = FirebaseVision.getInstance().onDeviceTextRecognizer
+
+            detector.processImage(image)
+                .addOnSuccessListener { firebaseVisionText ->
+                    v.isEnabled = true
+                    processResultTextSechond(firebaseVisionText)
+                }
+                .addOnFailureListener {
+                    v.isEnabled = true
+                    binding.ocrResultEtSechond.text = "Failed"
+                }
+        } else {
+            Toast.makeText(this, "Select an Image First", Toast.LENGTH_LONG).show()
+        }
+
+    }
+
+    // sechond number process ocr
+    @SuppressLint("SetTextI18n")
+    private fun processResultTextSechond(resultText: FirebaseVisionText) {
+        if (resultText.textBlocks.size == 0) {
+            binding.ocrResultEt.text = "No Text Found"
+            return
+        }
+        for (block in resultText.textBlocks) {
+            val blockText = block.text.trim()
+            binding.ocrResultEtSechond.text = blockText
         }
     }
 
@@ -205,6 +472,12 @@ class KalkulatorActivity : AppCompatActivity() {
 
     private fun saveEditedImage() {
         val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, finalUri)
+        saveMediaToStorage(bitmap)
+
+    }
+
+    private fun saveEditedImageSechond() {
+        val bitmap = MediaStore.Images.Media.getBitmap(this.contentResolver, finalUriSechond)
         saveMediaToStorage(bitmap)
 
     }
@@ -249,48 +522,10 @@ class KalkulatorActivity : AppCompatActivity() {
         activityResultLauncher.launch(intent)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        when (requestCode) {
-
-            GALLERY_REQUEST_CODE -> {
-                if (resultCode == Activity.RESULT_OK) {
-                    data?.data?.let { uri ->
-                        launchImageCrop(uri)
-                    }
-                }
-
-                else{
-
-                }
-            }
-
-        }
-
-        if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
-            val resultUri :Uri ?= UCrop.getOutput(data!!)
-
-            setImage(resultUri!!)
-
-            finalUri=resultUri
-
-            binding.image.visibility= View.VISIBLE
-            binding.save.visibility=View.VISIBLE
-            binding.cancel.visibility=View.VISIBLE
-            binding.camera.visibility=View.GONE
-            binding.gallery.visibility=View.GONE
-
-        }
-
-    }
 
     private fun launchImageCrop(uri: Uri) {
-
-
         var destination:String=StringBuilder(UUID.randomUUID().toString()).toString()
         var options:UCrop.Options=UCrop.Options()
-
 
         UCrop.of(Uri.parse(uri.toString()), Uri.fromFile(File(cacheDir,destination)))
             .withOptions(options)
@@ -298,7 +533,6 @@ class KalkulatorActivity : AppCompatActivity() {
             .useSourceImageAspectRatio()
             .withMaxResultSize(2000, 2000)
             .start(this)
-
 
     }
 
@@ -308,8 +542,11 @@ class KalkulatorActivity : AppCompatActivity() {
             .into(binding.image)
     }
 
-
-
+    private fun setImageSechond(uri: Uri){
+        Glide.with(this)
+            .load(uri)
+            .into(binding.imageSechond)
+    }
 
     private fun checkPermission(): Boolean {
         return ContextCompat.checkSelfPermission(

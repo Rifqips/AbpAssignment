@@ -2,4 +2,9 @@
     <string name="app_name">AssigmentAndroid</string>
     <string name="title_activity_kalkulator">KalkulatorActivity</string>
     <string name="image_picker_provider_authority_suffix">image_picker_provider_authority_suffix</string>
+    <string name="halaman_kalkulator">Kalkulator</string>
+
+    <string name="checked">checked</string>
+    <string name="unchecked">unchecked</string>
+
 </resources>

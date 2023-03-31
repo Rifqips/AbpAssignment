@@ -2,6 +2,8 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.gms.google-services'
+    id 'kotlin-parcelize'
+    id 'kotlin-kapt'
 }
 
 android {
@@ -64,5 +66,16 @@ dependencies {
 
     //static circle image
     implementation 'de.hdodenhof:circleimageview:3.1.0'
+
+    //library room database
+    //noinspection GradleDependency
+    implementation "androidx.room:room-runtime:2.2.5"
+    //noinspection GradleDependency
+    kapt "androidx.room:room-compiler:2.2.5"
+    //noinspection GradleDependency
+    implementation "androidx.room:room-ktx:2.2.5"
+
+    //lib coroutines
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.7'
 
 }
