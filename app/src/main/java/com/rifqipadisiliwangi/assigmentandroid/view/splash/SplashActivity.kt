@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.ActionBar
 import com.rifqipadisiliwangi.assigmentandroid.databinding.ActivitySplashBinding
+import com.rifqipadisiliwangi.assigmentandroid.view.auth.login.LoginActivity
 import com.rifqipadisiliwangi.assigmentandroid.view.home.HomeActivity
 
 class SplashActivity : AppCompatActivity() {
@@ -17,7 +18,7 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
         Handler(Looper.myLooper()!!).postDelayed({
-            startActivity(Intent(this, HomeActivity::class.java))
+            startActivity(Intent(this, LoginActivity::class.java))
             finish()
         },3000)
         setContentView(binding.root)

@@ -22,51 +22,51 @@ class ProfileActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProfileBinding
 
-//    private var imageMultiPart: MultipartBody.Part? = null
-//    private var imageFile: File? = null
-//    private val PICK_IMAGE_PERMISSIONS_REQUEST_CODE = 100
-//    private var imageUri: Uri? = Uri.EMPTY
+    private var imageMultiPart: MultipartBody.Part? = null
+    private var imageFile: File? = null
+    private val PICK_IMAGE_PERMISSIONS_REQUEST_CODE = 100
+    private var imageUri: Uri? = Uri.EMPTY
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityProfileBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-//        binding.selectImageBtn.setOnClickListener {
-//            openGallery()
-//        }
+        binding.selectImageBtn.setOnClickListener {
+            openGallery()
+        }
 
-//        binding.processImageBtn.setOnClickListener {
+        binding.processImageBtn.setOnClickListener {
 //            processImage(binding.processImageBtn)
-//        }
+        }
     }
-//    fun openGallery(){
-//        getContent.launch("image/*")
-//    }
-//    private val getContent =
-//        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-//            uri?.let {
-//                val contentResolver: ContentResolver = this!!.contentResolver
-//                val type = contentResolver.getType(it)
-//                imageUri = it
-//
-//                val fileNameimg = "${System.currentTimeMillis()}.png"
-//
-//                val imageView = binding.ocrImageView
-//                imageView.setImageURI(it)
-//
-//                Toast.makeText(this, "$imageUri", Toast.LENGTH_SHORT).show()
-//
-//                val tempFile = File.createTempFile("assignment-1", fileNameimg, null)
-//                imageFile = tempFile
-//                val inputstream = contentResolver.openInputStream(uri)
-//                tempFile.outputStream().use    { result ->
-//                    inputstream?.copyTo(result)
-//                }
-//                val requestBody: RequestBody = tempFile.asRequestBody(type?.toMediaType())
-//                imageMultiPart = MultipartBody.Part.createFormData("image", tempFile.name, requestBody)
-//            }
-//        }
+    fun openGallery(){
+        getContent.launch("image/*")
+    }
+    private val getContent =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let {
+                val contentResolver: ContentResolver = this!!.contentResolver
+                val type = contentResolver.getType(it)
+                imageUri = it
+
+                val fileNameimg = "${System.currentTimeMillis()}.png"
+
+                val imageView = binding.ocrImageView
+                imageView.setImageURI(it)
+
+                Toast.makeText(this, "$imageUri", Toast.LENGTH_SHORT).show()
+
+                val tempFile = File.createTempFile("assignment-1", fileNameimg, null)
+                imageFile = tempFile
+                val inputstream = contentResolver.openInputStream(uri)
+                tempFile.outputStream().use    { result ->
+                    inputstream?.copyTo(result)
+                }
+                val requestBody: RequestBody = tempFile.asRequestBody(type?.toMediaType())
+                imageMultiPart = MultipartBody.Part.createFormData("image", tempFile.name, requestBody)
+            }
+        }
 
 //    fun processImage(v: View) {
 //        if (binding.ocrImageView.drawable != null) {

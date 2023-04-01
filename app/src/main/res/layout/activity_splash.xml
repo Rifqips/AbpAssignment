@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintBottom_toBottomOf="@+id/guideline1"/>
 
     <LinearLayout
         android:id="@+id/wrapTitle"
@@ -31,7 +31,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/dm_sans_bold"
+            android:textStyle="bold"
             android:text="Aplikasi"
             android:textColor="@color/purple_500"
             android:textSize="25sp" />
@@ -51,11 +51,18 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/dm_sans"
-        android:textColor="@color/purple_500"
+        android:textColor="@color/black_third"
         android:text="Talent Pool ABP"
         android:textSize="18sp"
         app:layout_constraintTop_toBottomOf="@+id/wrapTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="680dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

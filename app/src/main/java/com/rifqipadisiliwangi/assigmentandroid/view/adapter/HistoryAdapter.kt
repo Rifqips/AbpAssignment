@@ -2,13 +2,22 @@ package com.rifqipadisiliwangi.assigmentandroid.view.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import android.content.Context
 import androidx.recyclerview.widget.RecyclerView
 import com.rifqipadisiliwangi.assigmentandroid.databinding.ItemHistoryBinding
+import com.rifqipadisiliwangi.assigmentandroid.room.DaoHistory
 import com.rifqipadisiliwangi.assigmentandroid.room.DataHistory
 import com.rifqipadisiliwangi.assigmentandroid.room.DatabaseHistory
-class HistoryAdapter(var listHistory : List<DataHistory>): RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
+class HistoryAdapter(): RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
+
+    private lateinit var context : Context
     var dbHistory: DatabaseHistory? = null
+    private var listHistory : List<DataHistory> = emptyList()
+    private lateinit var daoHistory : DaoHistory
 
     class ViewHolder(var binding: ItemHistoryBinding) : RecyclerView.ViewHolder(binding.root)  {
 
@@ -16,6 +25,10 @@ class HistoryAdapter(var listHistory : List<DataHistory>): RecyclerView.Adapter<
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         var view = ItemHistoryBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        dbHistory = DatabaseHistory.getInstance(parent.context)
+        if(dbHistory != null){
+            daoHistory = dbHistory!!.HistoryItem()
+        }
         return ViewHolder(view)
     }
 
@@ -35,5 +48,20 @@ class HistoryAdapter(var listHistory : List<DataHistory>): RecyclerView.Adapter<
         this.listHistory = listHistory
     }
 
+    interface OnAdapterListener {
+        fun onDelete(wishlist: DataHistory)
+    }
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+        context = recyclerView.context
+    }
+    fun getHistory(position: Int): DataHistory = listHistory[position]
+
+    fun deleteHistory(dataListHistory: DataHistory, position: Int){
+        CoroutineScope(Dispatchers.IO).launch {
+            daoHistory.deleteHistory(dataListHistory)
+        }
+        notifyItemChanged(position)
+    }
 
 }
