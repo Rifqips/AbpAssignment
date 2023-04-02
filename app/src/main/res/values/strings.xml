@@ -7,4 +7,8 @@
     <string name="checked">checked</string>
     <string name="unchecked">unchecked</string>
 
+
+    <string name="title">Keluar</string>
+    <string name="dialogMsg">Kamu yakin ingin keluar ? </string>
+
 </resources>

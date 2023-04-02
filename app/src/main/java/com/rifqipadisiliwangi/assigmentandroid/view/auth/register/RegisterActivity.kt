@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isGone
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.github.dhaval2404.imagepicker.ImagePicker
@@ -175,25 +176,18 @@ class RegisterActivity : AppCompatActivity(), PermissionListener {
         user.email = sEmail
         user.url = sUrl
 
-        if (sUsername != null){
-            checkingUsername(sUsername, user)
-        }
+        checkingUsername(sUsername, user)
     }
 
     private fun checkingUsername(sUsername: String, data: User) {
         mFirebaseDatabase.child(sUsername).addValueEventListener(object : ValueEventListener{
             override fun onDataChange(dataSnapshot: DataSnapshot) {
-                val user = dataSnapshot.getValue(User::class.java)
-                if (user == null){
-                    mFirebaseDatabase.child(sUsername).setValue(data)
+                mFirebaseDatabase.child(sUsername).setValue(data)
 
-                    val intent = Intent(this@RegisterActivity,
-                        HomeActivity::class.java).putExtra("data", data.username)
-                    startActivity(intent)
-
-                } else {
-                    Toast.makeText(this@RegisterActivity, "User sudah digunakan", Toast.LENGTH_LONG).show()
-                }
+                val intent = Intent(this@RegisterActivity,
+                    LoginActivity::class.java).putExtra("data", data.username)
+                startActivity(intent)
+                Toast.makeText(this@RegisterActivity, "Sukses Register", Toast.LENGTH_LONG).show()
             }
 
             override fun onCancelled(databaseError: DatabaseError) {
@@ -232,6 +226,7 @@ class RegisterActivity : AppCompatActivity(), PermissionListener {
                 .into(binding.ivProfile)
 
             binding.ivAdd.setImageResource(R.drawable.baseline_restore_from_trash_24)
+            binding.btnLanjutkan.isGone = false
 
         } else if (resultCode == ImagePicker.RESULT_ERROR) {
             Toast.makeText(this, ImagePicker.getError(data), Toast.LENGTH_SHORT).show()

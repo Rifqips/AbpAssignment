@@ -36,6 +36,7 @@ import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.text.FirebaseVisionText
 import com.rifqipadisiliwangi.assigmentandroid.R
+import com.rifqipadisiliwangi.assigmentandroid.databinding.ActivityHomeBinding
 import com.rifqipadisiliwangi.assigmentandroid.databinding.ActivityKalkulatorBinding
 import com.rifqipadisiliwangi.assigmentandroid.room.DaoHistory
 import com.rifqipadisiliwangi.assigmentandroid.room.DataHistory
@@ -49,7 +50,11 @@ import java.lang.ref.WeakReference
 import java.util.*
 class KalkulatorActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityKalkulatorBinding
+    private var _binding: ActivityKalkulatorBinding? = null
+
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
 
     private val GALLERY_REQUEST_CODE = 1234
     private val WRITE_EXTERNAL_STORAGE_CODE = 1
@@ -64,7 +69,7 @@ class KalkulatorActivity : AppCompatActivity() {
     private var dbHistory : DatabaseHistory? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityKalkulatorBinding.inflate(layoutInflater)
+        _binding = ActivityKalkulatorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         dbHistory = DatabaseHistory.getInstance(this)
@@ -495,8 +500,11 @@ class KalkulatorActivity : AppCompatActivity() {
         }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
 
 }

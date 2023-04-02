@@ -19,28 +19,35 @@ import com.rifqipadisiliwangi.assigmentandroid.room.DatabaseHistory
 import com.rifqipadisiliwangi.assigmentandroid.utils.PreferencesClass
 import com.rifqipadisiliwangi.assigmentandroid.view.adapter.HistoryAdapter
 import com.rifqipadisiliwangi.assigmentandroid.view.kalkulator.KalkulatorActivity
+import com.rifqipadisiliwangi.assigmentandroid.view.profile.ProfileActivity
 import com.rifqipadisiliwangi.assigmentandroid.viewmodel.HistoryViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.invoke
 
 private const val TAG = "HomeActivity"
 class HomeActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityHomeBinding
+    private var _binding: ActivityHomeBinding? = null
+
+    // This property is only valid between onCreateView and
+    // onDestroyView.
+    private val binding get() = _binding!!
 
     var historyDB : DatabaseHistory? = null
     lateinit var adapterHistory : HistoryAdapter
-    lateinit var viewModel: HistoryViewModel
+    private lateinit var viewModel: HistoryViewModel
 
     private lateinit var preferences: PreferencesClass
     private lateinit var mFirebaseInstance: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityHomeBinding.inflate(layoutInflater)
+        _binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        historyVm()
         swipeDelete()
+
 
         preferences = PreferencesClass(this)
         mFirebaseInstance = FirebaseDatabase.getInstance().reference
@@ -52,15 +59,23 @@ class HomeActivity : AppCompatActivity() {
 
         binding.tvUsername.text = preferences.getValue("username")
 
+        historyVm()
 
         historyDB = DatabaseHistory.getInstance(this)
+
         viewModel = ViewModelProvider(this).get(HistoryViewModel::class.java)
-        viewModel.getAllHistoryObserve().observe(this,{
-            adapterHistory.setHistoryData(it as ArrayList<DataHistory>)
-        })
+        viewModel.getAllHistoryObserve().observe(this) {
+            if(it != null){
+                adapterHistory.setHistoryData(it as ArrayList<DataHistory>)
+            }
+        }
 
         binding.btnKalkulator.setOnClickListener {
             startActivity(Intent(this, KalkulatorActivity::class.java))
+        }
+
+        binding.ivSetImage.setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
     }
 
@@ -71,10 +86,8 @@ class HomeActivity : AppCompatActivity() {
                 GlobalScope.async {
                     val position = viewHolder.adapterPosition
                     val dataDelete = adapterHistory.deleteHistory(adapterHistory.getHistory(position), position)
-                    Log.d(TAG, "onSwiped: ${dataDelete}")
-                    runOnUiThread {
-                        historyVm()
-                    }
+                    Log.d(TAG, "onSwiped: $dataDelete")
+                    historyVm()
                 }
 
             }
@@ -89,10 +102,8 @@ class HomeActivity : AppCompatActivity() {
         binding.rvHistory.adapter = adapterHistory
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.rvHistory.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        binding.rvHistory.adapter = adapterHistory
+    override fun onDestroy() {
+        super.onDestroy()
+        _binding = null
     }
-
 }
