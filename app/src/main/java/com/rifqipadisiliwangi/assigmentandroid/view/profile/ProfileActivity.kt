@@ -39,7 +39,6 @@ class ProfileActivity : AppCompatActivity() {
         binding.btnLogout.setOnClickListener {
             val mEditor = preferences.sharedPref.edit()
             mEditor.remove("username").apply()
-            mEditor.remove("url").apply()
             mEditor.remove("email").apply()
             mEditor.clear()
             alert()
