@@ -7,5 +7,5 @@
  3. Pada home tampilan history sedikit bug mengenai live data dari viewm modelnya, jadi terkadang hilang sendiri.
  4. Menggunakan Swipe delete pada history, cara menggunakannya swipe ke kiri tidak perlu sampai full slide ke kiri, cukup slide sedikit ke tengah kemudian dilepas,    karena masih bug.
  
- link reoo : https://github.com/Rifqips/AbpAssignment
+ link repository github : https://github.com/Rifqips/AbpAssignment
  
